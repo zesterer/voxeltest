@@ -1,3 +1,7 @@
+# Custom
+build
+build-win64
+
 # Compiled Object files
 *.slo
 *.lo
