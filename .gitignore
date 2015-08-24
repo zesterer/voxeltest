@@ -1,6 +1,9 @@
 # Custom
 build
+build-linux
 build-win64
+build-win32
+build-macos
 
 # Compiled Object files
 *.slo
