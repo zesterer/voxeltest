@@ -1,1 +1,0 @@
-/usr/bin/c++      CMakeFiles/voxeltest.dir/src/main.cpp.o  -o voxeltest -rdynamic libvolume/liblibvolume.a -lsfml-system -lsfml-window -lsfml-graphics -lsfml-network -lsfml-audio /usr/local/lib/libglbinding.so -Wl,-rpath,/usr/local/lib 

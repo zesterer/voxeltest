@@ -1,2 +1,0 @@
-/usr/bin/ar cq liblibvolume.a  CMakeFiles/libvolume.dir/src/libvolume/data/voxel.cpp.o CMakeFiles/libvolume.dir/src/libvolume/data/voxelfield.cpp.o CMakeFiles/libvolume.dir/src/libvolume/window/window.cpp.o CMakeFiles/libvolume.dir/src/libvolume/common/io.cpp.o
-/usr/bin/ranlib liblibvolume.a

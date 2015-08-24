@@ -1,2 +1,0 @@
-/home/barry/Documents/Projects/voxeltest/build-linux/CMakeFiles/voxeltest.dir
-/home/barry/Documents/Projects/voxeltest/build-linux/libvolume/CMakeFiles/libvolume.dir
