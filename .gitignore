@@ -1,9 +1,18 @@
 # Custom
 build
 build-linux
+<<<<<<< HEAD
 build-win64
 build-win32
 build-macos
+=======
+build-macos
+build-win32
+build-win64
+build-android
+build-bsd
+build-ios
+>>>>>>> da4c5abcaa4b567867008b53719d582bb12c1b5e
 
 # Compiled Object files
 *.slo

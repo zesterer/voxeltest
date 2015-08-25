@@ -15,5 +15,7 @@ int main(int argc, char* argv[])
 	LibVolume::Window::Window window;
 	window.outputContextDebug();
 	
+	while (window.tick() == false);
+	
 	return 0;
 }
