@@ -22,7 +22,7 @@ Compile and run it if you so wish, but it's not very interesting unless, like me
 
 ## Compilation
 
-~ From the root repository directory ~
+~ From the root repository directory, as already done in the previous step ~
 
 `mkdir build`
 
