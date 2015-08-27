@@ -4,6 +4,7 @@
 #include "libvolume/window/window.h"
 #include "libvolume/common/io.h"
 #include "libvolume/engine/realm.h"
+#include "libvolume/engine/actor.h"
 
 int main(int argc, char* argv[])
 {
@@ -14,6 +15,9 @@ int main(int argc, char* argv[])
 	window.outputContextDebug();
 	
 	LibVolume::Engine::Realm realm;
+	LibVolume::Engine::Actor actor;
+	
+	realm.objects.push_back((LibVolume::Engine::Object*)&actor);
 	
 	//Run the window
 	while (window.tick() == false)
