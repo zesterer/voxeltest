@@ -17,6 +17,10 @@ int main(int argc, char* argv[])
 	LibVolume::Engine::Realm realm;
 	LibVolume::Engine::Actor actor;
 	
+	actor.mesh.loadFromOBJ("../Dugtrio.obj.test");
+	
+	//actor.state.scale = glm::vec3(100.0, 100.0, 100.0);
+	
 	realm.objects.push_back((LibVolume::Engine::Object*)&actor);
 	
 	//Run the window
