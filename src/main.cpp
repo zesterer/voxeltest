@@ -20,8 +20,8 @@ int main(int argc, char* argv[])
 	actor->mesh.loadFromOBJ("../Airship.obj.test");
 	actor->state.position.y = -3.0;
 	actor->state.scale = glm::vec3(0.02, 0.02, 0.02);
-	//actor->state.orientation = glm::quat(glm::vec3(-1.6, 0.0, 0.0));
-	actor->state.spin = glm::quat(glm::vec3(0.0, 0.03, 0.0));
+	actor->state.orientation = glm::quat(glm::vec3(0.0, 0.0, 0.0));
+	//actor->state.spin = glm::quat(glm::vec3(0.0, 0.03, 0.0));
 	
 	realm.objects.push_back(dynamic_cast<LibVolume::Engine::Object*>(actor));
 	
@@ -30,6 +30,28 @@ int main(int argc, char* argv[])
 	{
 		realm.tick();
 		realm.render();
+		
+		if (window.event_manager.keyboard_state.key_w)
+			realm.camera.state.position.x += 0.3;
+		if (window.event_manager.keyboard_state.key_a)
+			realm.camera.state.position.y += 0.3;
+		if (window.event_manager.keyboard_state.key_s)
+			realm.camera.state.position.x -= 0.3;
+		if (window.event_manager.keyboard_state.key_d)
+			realm.camera.state.position.y -= 0.3;
+		if (window.event_manager.keyboard_state.key_space)
+			realm.camera.state.position.z += 0.3;
+		if (window.event_manager.keyboard_state.key_shift)
+			realm.camera.state.position.z -= 0.3;
+		
+		if (window.event_manager.keyboard_state.key_up)
+			realm.camera.state.orientation = glm::quat(glm::vec3(0.03, 0.0, 0.0)) * realm.camera.state.orientation;
+		if (window.event_manager.keyboard_state.key_left)
+			realm.camera.state.orientation = glm::quat(glm::vec3(0.0, -0.03, 0.0)) * realm.camera.state.orientation;
+		if (window.event_manager.keyboard_state.key_down)
+			realm.camera.state.orientation = glm::quat(glm::vec3(-0.03, 0.0, 0.0)) * realm.camera.state.orientation;
+		if (window.event_manager.keyboard_state.key_right)
+			realm.camera.state.orientation = glm::quat(glm::vec3(0.0, 0.03, 0.0)) * realm.camera.state.orientation;
 	};
 	
 	return 0;
