@@ -23,6 +23,9 @@ int main(int argc, char* argv[])
 	actor->state.orientation = glm::quat(glm::vec3(0.0, 0.0, 0.0));
 	//actor->state.spin = glm::quat(glm::vec3(0.0, 0.03, 0.0));
 
+	LibVolume::Render::Structures::Light sun(LibVolume::Render::Structures::LightType::Directional, glm::vec3(0.5, 0.5, -1.0), glm::vec3(1.0, 1.0, 0.9), 0.4);
+	realm.light_list.push_back(&sun);
+
 	realm.objects.push_back(dynamic_cast<LibVolume::Engine::Object*>(actor));
 
 	//Run the window
