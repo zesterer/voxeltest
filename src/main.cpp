@@ -15,18 +15,18 @@ int main(int argc, char* argv[])
 
 	LibVolume::Engine::Realm realm;
 	realm.setEventManager(&window.event_manager);
-	LibVolume::Engine::Actor* actor = new LibVolume::Engine::Actor();
 
-	actor->mesh.loadFromOBJ("../Link.obj.test");
-	actor->state.position.y = -3.0;
-	actor->state.scale = glm::vec3(1.0, 1.0, 1.0);
-	actor->state.orientation = glm::quat(glm::vec3(0.0, 0.0, 0.0));
-	//actor->state.spin = glm::quat(glm::vec3(0.0, 0.03, 0.0));
+	LibVolume::Engine::Actor* ship = new LibVolume::Engine::Actor();
+	ship->mesh.loadFromOBJ("../Starfighter.obj.test");
+	ship->mesh_state.orientation = glm::quat(glm::vec3(3.1, 0.0, 3.1));
+	realm.objects.push_back(dynamic_cast<LibVolume::Engine::Object*>(ship));
+
+	LibVolume::Engine::Actor* planet = new LibVolume::Engine::Actor();
+	planet->mesh.loadFromOBJ("../Planet0.obj.test");
+	realm.objects.push_back(dynamic_cast<LibVolume::Engine::Object*>(planet));
 
 	LibVolume::Render::Structures::Light sun(LibVolume::Render::Structures::LightType::Directional, glm::vec3(0.5, 0.5, -1.0), glm::vec3(1.0, 1.0, 0.9), 0.4);
 	realm.light_list.push_back(&sun);
-
-	realm.objects.push_back(dynamic_cast<LibVolume::Engine::Object*>(actor));
 
 	//Run the window
 	while (window.tick() == false)
@@ -34,27 +34,34 @@ int main(int argc, char* argv[])
 		realm.tick();
 		realm.render();
 
-		if (window.event_manager.keyboard_state.key_w)
-			realm.camera.state.position += glm::vec3(0.0, 0.0, -0.3) * realm.camera.state.orientation;
-		if (window.event_manager.keyboard_state.key_a)
-			realm.camera.state.position += glm::vec3(-0.3, 0.0, 0.0) * realm.camera.state.orientation;
-		if (window.event_manager.keyboard_state.key_s)
-			realm.camera.state.position += glm::vec3(0.0, 0.0, 0.3) * realm.camera.state.orientation;
-		if (window.event_manager.keyboard_state.key_d)
-			realm.camera.state.position += glm::vec3(0.3, 0.0, 0.0) * realm.camera.state.orientation;
 		if (window.event_manager.keyboard_state.key_space)
-			realm.camera.state.position += glm::vec3(0.0, 0.3, 0.0) * realm.camera.state.orientation;
+			ship->state.velocity += ship->state.orientation * glm::vec3(0.0, 0.1, 0.0);
 		if (window.event_manager.keyboard_state.key_shift)
-			realm.camera.state.position += glm::vec3(0.0, -0.3, 0.0) * realm.camera.state.orientation;
-
-		if (window.event_manager.keyboard_state.key_up)
-			realm.camera.state.orientation = glm::quat(glm::vec3(0.03, 0.0, 0.0)) * realm.camera.state.orientation;
+			ship->state.velocity += ship->state.orientation * glm::vec3(0.0, -0.1, 0.0);
 		if (window.event_manager.keyboard_state.key_left)
-			realm.camera.state.orientation = glm::quat(glm::vec3(0.0, -0.03, 0.0)) * realm.camera.state.orientation;
-		if (window.event_manager.keyboard_state.key_down)
-			realm.camera.state.orientation = glm::quat(glm::vec3(-0.03, 0.0, 0.0)) * realm.camera.state.orientation;
+			ship->state.velocity += ship->state.orientation * glm::vec3(-0.1, 0.0, 0.0);
 		if (window.event_manager.keyboard_state.key_right)
-			realm.camera.state.orientation = glm::quat(glm::vec3(0.0, 0.03, 0.0)) * realm.camera.state.orientation;
+			ship->state.velocity += ship->state.orientation * glm::vec3(0.1, 0.0, 0.0);
+		if (window.event_manager.keyboard_state.key_up)
+			ship->state.velocity += ship->state.orientation * glm::vec3(0.0, 0.0, -0.1);
+		if (window.event_manager.keyboard_state.key_down)
+			ship->state.velocity += ship->state.orientation * glm::vec3(0.0, 0.0, 0.1);
+
+		if (window.event_manager.keyboard_state.key_w)
+			ship->state.orientation *= glm::quat(glm::vec3(-0.03, 0.0, 0.0));// * ship->state.orientation;
+		if (window.event_manager.keyboard_state.key_a)
+			ship->state.orientation *= glm::quat(glm::vec3(0.0, 0.03, 0.0));// * ship->state.orientation;
+		if (window.event_manager.keyboard_state.key_s)
+			ship->state.orientation *= glm::quat(glm::vec3(0.03, 0.0, 0.0));// * ship->state.orientation;
+		if (window.event_manager.keyboard_state.key_d)
+			ship->state.orientation *= glm::quat(glm::vec3(0.0, -0.03, 0.0));// * ship->state.orientation;
+		if (window.event_manager.keyboard_state.key_q)
+			ship->state.orientation *= glm::quat(glm::vec3(0.0, 0.0, 0.03));// * ship->state.orientation;
+		if (window.event_manager.keyboard_state.key_e)
+			ship->state.orientation *= glm::quat(glm::vec3(0.0, 0.0, -0.03));// * ship->state.orientation;
+
+		realm.camera.state.position = ship->state.position + glm::vec3(0.0, 0.0, 300.0) * glm::inverse(ship->state.orientation);
+		realm.camera.state.orientation = glm::inverse(ship->state.orientation);
 	};
 
 	return 0;
