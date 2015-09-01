@@ -36,11 +36,10 @@ int main(int argc, char* argv[])
 	realm.setEventManager(&window.event_manager);
 
 	LibVolume::Engine::Actor* ship = new LibVolume::Engine::Actor();
-	ship->mesh.loadFromOBJ("../Starfighter.obj.test");
+	ship->mesh.loadFromOBJ("../spaceship0.obj.test");
 	ship->state.position = glm::vec3(50.0, 0.0, 0.0);
-	ship->state.scale = glm::vec3(1.5, 1.5, 1.5);
-	ship->mesh_state.position += glm::vec3(0.0, -20.0, 0.0);
-	ship->mesh_state.orientation = glm::quat(glm::vec3(3.141, 0.0, 3.141));
+	ship->state.scale = glm::vec3(20.0, 20.0, 20.0);
+	ship->mesh_state.orientation = glm::quat(glm::vec3(0.0, 0.0, 1.55));
 	ship->mesh.colour = glm::vec3(0.5, 0.05, 0.05);
 	realm.objects.push_back(dynamic_cast<LibVolume::Engine::Object*>(ship));
 
