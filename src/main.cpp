@@ -9,7 +9,7 @@
 void addPlanet(LibVolume::Engine::Realm* realm)
 {
 	LibVolume::Engine::Actor* planet1 = new LibVolume::Engine::Actor();
-	planet1->mesh.loadFromOBJ("../earth.obj.test");
+	planet1->mesh->loadFromOBJ("../earth.obj.test");
 	float x = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
 	float y = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
 	float z = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
@@ -19,7 +19,7 @@ void addPlanet(LibVolume::Engine::Realm* realm)
 	float b = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
 
 	planet1->state.position = (glm::vec3(x, y, z) - 0.5f) * 100000.0f;
-	planet1->mesh.colour = glm::vec3(r, g, b);
+	planet1->mesh->colour = glm::vec3(r, g, b);
 	planet1->state.scale = glm::vec3(5000.0, 5000.0, 5000.0);
 	realm->objects.push_back(dynamic_cast<LibVolume::Engine::Object*>(planet1));
 }
@@ -36,21 +36,21 @@ int main(int argc, char* argv[])
 	realm.setEventManager(&window.event_manager);
 
 	LibVolume::Engine::Actor* ship = new LibVolume::Engine::Actor();
-	ship->mesh.loadFromOBJ("../spaceship0.obj.test");
+	ship->mesh->loadFromOBJ("../spaceship0.obj.test");
 	ship->state.position = glm::vec3(50.0, 0.0, 0.0);
 	ship->state.scale = glm::vec3(20.0, 20.0, 20.0);
 	ship->mesh_state.orientation = glm::quat(glm::vec3(0.0, 0.0, 1.55));
-	ship->mesh.colour = glm::vec3(0.5, 0.05, 0.05);
+	ship->mesh->colour = glm::vec3(0.5, 0.05, 0.05);
 	realm.objects.push_back(dynamic_cast<LibVolume::Engine::Object*>(ship));
 
 	LibVolume::Engine::Actor* planet0 = new LibVolume::Engine::Actor();
-	planet0->mesh.loadFromOBJ("../earth.obj.test");
-	planet0->mesh.colour = glm::vec3(0.0, 0.7, 0.0);
+	planet0->mesh->loadFromOBJ("../earth.obj.test");
+	planet0->mesh->colour = glm::vec3(0.0, 0.7, 0.0);
 	planet0->state.scale = glm::vec3(5000.0, 5000.0, 5000.0);
 	realm.objects.push_back(dynamic_cast<LibVolume::Engine::Object*>(planet0));
 
 	LibVolume::Engine::Actor* sky = new LibVolume::Engine::Actor();
-	sky->mesh.loadFromOBJ("../skybox.obj.test");
+	sky->mesh->loadFromOBJ("../skybox.obj.test");
 	sky->mesh_state.scale = glm::vec3(100.0, 100.0, 100.0);
 	realm.objects.push_back(dynamic_cast<LibVolume::Engine::Object*>(sky));
 
@@ -91,8 +91,8 @@ int main(int argc, char* argv[])
 		if (window.event_manager.keyboard_state.key_e)
 			ship->state.spin = (glm::quat(ship->state.orientation * glm::vec3(0.0, 0.0, -0.001))) * ship->state.spin;
 
-		realm.camera.state.position = glm::inverse(ship->state.orientation) * ship->state.velocity + ship->state.position + glm::vec3(0.0, 50.0, 300.0) * glm::inverse(ship->state.orientation);
-		realm.camera.state.orientation = glm::inverse(ship->state.orientation * glm::inverse(ship->state.spin * ship->state.spin));
+		realm.camera.state.orientation = glm::inverse(glm::mix(ship->state.spin, glm::quat(), 8.0f) * ship->state.orientation);
+		realm.camera.state.position = ship->state.position + glm::vec3(0.0, 50.0, 300.0) * realm.camera.state.orientation;
 
 		ship->state.spin = glm::mix(ship->state.spin, glm::quat(), 0.015f * ship->state.spin.w);
 
