@@ -39,7 +39,7 @@ int main(int argc, char* argv[])
 	ship->mesh->loadFromOBJ("../spaceship0.obj.test");
 	ship->state.position = glm::vec3(50.0, 0.0, 0.0);
 	ship->state.scale = glm::vec3(20.0, 20.0, 20.0);
-	ship->mesh_state.orientation = glm::quat(glm::vec3(0.0, 0.0, 1.55));
+	ship->mesh_state.orientation = glm::quat(glm::vec3(-1.55, 0.0, 1.55));
 	ship->mesh->colour = glm::vec3(0.5, 0.05, 0.05);
 	realm.objects.push_back(dynamic_cast<LibVolume::Engine::Object*>(ship));
 
