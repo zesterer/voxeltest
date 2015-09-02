@@ -45,7 +45,7 @@ int main(int argc, char* argv[])
 	realm.objects.push_back(dynamic_cast<LibVolume::Engine::Object*>(ship));
 
 	LibVolume::Engine::VoxelActor asteroid(glm::ivec3(16, 16, 16));
-	asteroid.state.scale = glm::vec3(1000.0, 1000.0, 1000.0);
+	asteroid.state.scale = glm::vec3(200.0, 200.0, 200.0);
 	asteroid.mesh_state.position = glm::vec3(-8.0, -8.0, -8.0);
 	asteroid.mesh->colour = glm::vec3(0.5, 0.4, 0.2);
 
@@ -57,7 +57,7 @@ int main(int argc, char* argv[])
 			{
 				float d = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
 
-				asteroid.getAt(glm::ivec3(x + 8, y + 8, z + 8))->density = d * (8.0 - std::sqrt(x * x + y * y + z * z));
+				asteroid.getAt(glm::ivec3(x + 8, y + 8, z + 8))->density = (0.1 + d) * (8.0 - std::sqrt(x * x + y * y + z * z));
 			}
 		}
 	}
@@ -87,11 +87,13 @@ int main(int argc, char* argv[])
 	LibVolume::Render::Structures::Light sun(LibVolume::Render::Structures::LightType::Directional, glm::vec3(0.5, 0.5, -1.0), glm::vec3(1.0, 1.0, 0.9), 0.5);
 	realm.light_list.push_back(&sun);
 
+	LibVolume::Render::Structures::Mesh lasermesh;
+	lasermesh.loadFromOBJ("../laser.obj.test");
+	long long time_since_last_shot = 0;
+
 	//Run the window
 	while (window.tick() == false)
 	{
-		realm.tick();
-
 		if (window.event_manager.keyboard_state.key_space)
 			ship->state.velocity += ship->state.orientation * glm::vec3(0.0, 0.1, 0.0);
 		if (window.event_manager.keyboard_state.key_shift)
@@ -124,6 +126,33 @@ int main(int argc, char* argv[])
 		ship->state.spin = glm::mix(ship->state.spin, glm::quat(), 0.015f + 0.010f * ship->state.spin.w);
 
 		sky->state.position = ship->state.position;
+
+		if (window.event_manager.keyboard_state.key_enter && time_since_last_shot > 10)
+		{
+			LibVolume::Engine::Actor* laser = new LibVolume::Engine::Actor();
+			laser->mesh = &lasermesh;
+			laser->mesh->colour = glm::vec3(1.0, 0.0, 0.0);
+			laser->state.position = ship->state.position + ship->state.orientation * glm::vec3(50.0, 0.0, -100.0);
+			laser->state.scale = glm::vec3(4.0, 4.0, 8.0);
+			laser->state.orientation = ship->state.orientation;
+			laser->state.velocity = ship->state.velocity + ship->state.orientation * glm::vec3(0.0, 0.0, -100.0);
+			realm.objects.push_back(dynamic_cast<LibVolume::Engine::Object*>(laser));
+
+			laser = new LibVolume::Engine::Actor();
+			laser->mesh = &lasermesh;
+			laser->mesh->colour = glm::vec3(1.0, 0.0, 0.0);
+			laser->state.position = ship->state.position + ship->state.orientation * glm::vec3(-50.0, 0.0, -100.0);
+			laser->state.scale = glm::vec3(4.0, 4.0, 8.0);
+			laser->state.orientation = ship->state.orientation;
+			laser->state.velocity = ship->state.velocity + ship->state.orientation * glm::vec3(0.0, 0.0, -100.0);
+			realm.objects.push_back(dynamic_cast<LibVolume::Engine::Object*>(laser));
+
+			time_since_last_shot = 0;
+		}
+
+		time_since_last_shot ++;
+
+		realm.tick();
 
 		//Gravity
 		//ship->state.velocity += glm::normalize(planet->state.position - ship->state.position) * 0.01f;
