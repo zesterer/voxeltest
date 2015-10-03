@@ -6,22 +6,45 @@
 #include "libvolume/engine/realm.h"
 #include "libvolume/engine/actor.h"
 #include "libvolume/engine/voxelactor.h"
+#include "libvolume/engine/voxelterrain.h"
 
 void addPlanet(LibVolume::Engine::Realm* realm)
 {
-	LibVolume::Engine::Actor* planet1 = new LibVolume::Engine::Actor();
-	planet1->mesh->loadFromOBJ("../Planet0.obj.test");
+	LibVolume::Engine::VoxelActor* planet1 = new LibVolume::Engine::VoxelActor(glm::ivec3(32, 32, 32));
+	planet1->state.scale = glm::vec3(1000.0, 1000.0, 1000.0);
+	planet1->mesh_state.position = glm::vec3(-16.0, -16.0, -16.0);
+	//planet1->mesh->loadFromOBJ("../Planet0.obj.test");
+
+	for (int x = -16; x < 16; x ++)
+	{
+		for (int y = -16; y < 16; y ++)
+		{
+			for (int z = -16; z < 16; z ++)
+			{
+				float d = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+
+				planet1->getAt(glm::ivec3(x + 16, y + 16, z + 16))->density = (0.1 + d) * (16.0 - std::sqrt(x * x + y * y + z * z));
+			}
+		}
+	}
+
+	planet1->extract(LibVolume::Engine::MeshingAlgorithm::MarchingCubes);
+
+	float a = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+	float b = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+	float c = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+	planet1->state.spin = glm::quat(glm::vec3(2.0 * a - 1.0, 2.0 * b - 1.0, 2.0 * c - 1.0) * 0.001f);
+
 	float x = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
 	float y = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
 	float z = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
 
 	float r = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
 	float g = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
-	float b = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+	b = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
 
 	planet1->state.position = (glm::vec3(x, y, z) - 0.5f) * 100000.0f;
 	planet1->mesh->colour = glm::vec3(r, g, b);
-	planet1->state.scale = glm::vec3(10.0, 10.0, 10.0);
 	realm->addObject(*planet1);
 }
 
@@ -79,17 +102,54 @@ int main(int argc, char* argv[])
 	asteroid.extract(LibVolume::Engine::MeshingAlgorithm::MarchingCubes);
 	realm.addObject(asteroid);
 
-	/*LibVolume::Engine::Actor* planet0 = new LibVolume::Engine::Actor();
-	planet0->mesh->loadFromOBJ("../earth.obj.test");
-	planet0->mesh->colour = glm::vec3(0.0, 0.7, 0.0);
-	planet0->state.scale = glm::vec3(5000.0, 5000.0, 5000.0);
-	realm.objects.push_back(dynamic_cast<LibVolume::Engine::Object*>(planet0));*/
+	//Create a terrain object
+	LibVolume::Engine::VoxelTerrain terrain(glm::vec3(6, 6, 6));
+	terrain.state.scale = glm::vec3(50.0, 50.0, 50.0);
 
-	for (int count = 0; count < 4; count ++)
-		addPlanet(&realm);
+	for (int x = -8; x < 8; x ++)
+	{
+		for (int y = -8; y < 8; y ++)
+		{
+			for (int z = -8; z < 8; z ++)
+			{
+				float d = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+
+				float value = (0.9) * (3.0 - std::sqrt(x * x + y * y + z * z));
+
+				for (int xx = -3; xx < 3; xx ++)
+				{
+					for (int yy = -3; yy < 3; yy ++)
+					{
+						for (int zz = -3; zz < 3; zz ++)
+						{
+							terrain.loadAt(glm::ivec3(xx, yy, zz));
+							terrain.getAt(glm::ivec3(xx, yy, zz))->getAt(glm::ivec3(x + 3, y + 3, z + 3))->density = value;
+						}
+					}
+				}
+			}
+		}
+	}
+
+	for (int xx = -3; xx < 3; xx ++)
+	{
+		for (int yy = -3; yy < 3; yy ++)
+		{
+			for (int zz = -3; zz < 3; zz ++)
+			{
+				terrain.getAt(glm::ivec3(xx, yy, zz))->extract(LibVolume::Engine::MeshingAlgorithm::MarchingCubes);
+			}
+		}
+	}
+
+	terrain.getAt(glm::ivec3(0, 0, 0))->extract(LibVolume::Engine::MeshingAlgorithm::MarchingCubes);
+	terrain.getAt(glm::ivec3(1, 0, 0))->extract(LibVolume::Engine::MeshingAlgorithm::MarchingCubes);
+	realm.addObject(terrain);
+
+	//for (int count = 0; count < 4; count ++)
+		//addPlanet(&realm);
 
 	LibVolume::Render::Structures::Light sun(LibVolume::Render::Structures::LightType::Directional, glm::vec3(0.5, 0.5, -1.0), glm::vec3(1.0, 1.0, 0.9), 0.5);
-	//realm.light_list.push_back(&sun);
 	realm.addLight(sun);
 
 	LibVolume::Render::Structures::Mesh lasermesh;
@@ -183,9 +243,6 @@ int main(int argc, char* argv[])
 		time_since_last_shot ++;
 
 		realm.tick();
-
-		//Gravity
-		//ship.state.velocity += glm::normalize(planet->state.position - ship.state.position) * 0.01f;
 
 		realm.render();
 	};
