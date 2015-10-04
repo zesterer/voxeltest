@@ -106,11 +106,11 @@ int main(int argc, char* argv[])
 	LibVolume::Engine::VoxelTerrain terrain(glm::vec3(6, 6, 6));
 	terrain.state.scale = glm::vec3(50.0, 50.0, 50.0);
 
-	for (int x = -8; x < 8; x ++)
+	for (int x = 0; x < 6; x ++)
 	{
-		for (int y = -8; y < 8; y ++)
+		for (int y = 0; y < 6; y ++)
 		{
-			for (int z = -8; z < 8; z ++)
+			for (int z = 0; z < 6; z ++)
 			{
 				float d = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
 
@@ -123,7 +123,8 @@ int main(int argc, char* argv[])
 						for (int zz = -3; zz < 3; zz ++)
 						{
 							terrain.loadAt(glm::ivec3(xx, yy, zz));
-							terrain.getAt(glm::ivec3(xx, yy, zz))->getAt(glm::ivec3(x + 3, y + 3, z + 3))->density = value;
+							glm::ivec3 p = terrain.getAt(glm::ivec3(xx, yy, zz))->pos;
+							terrain.getAt(glm::ivec3(xx, yy, zz))->getAt(glm::ivec3(x, y, z))->density = (0.9) * (16.0 - std::sqrt((p.x + x) * (p.x + x) + (p.y + y) * (p.y + y) + (p.z + z) * (p.z + z)));
 						}
 					}
 				}
@@ -142,8 +143,6 @@ int main(int argc, char* argv[])
 		}
 	}
 
-	terrain.getAt(glm::ivec3(0, 0, 0))->extract(LibVolume::Engine::MeshingAlgorithm::MarchingCubes);
-	terrain.getAt(glm::ivec3(1, 0, 0))->extract(LibVolume::Engine::MeshingAlgorithm::MarchingCubes);
 	realm.addObject(terrain);
 
 	//for (int count = 0; count < 4; count ++)
