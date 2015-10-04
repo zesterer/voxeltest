@@ -74,7 +74,7 @@ int main(int argc, char* argv[])
 	ship2.state.scale = glm::vec3(20.0, 20.0, 20.0);
 	ship2.mesh_state.orientation = glm::quat(glm::vec3(-1.55, 0.0, 1.55));
 	ship2.mesh->colour = glm::vec3(0.5, 0.05, 0.05);
-	realm.addObject(ship2);
+	//realm.addObject(ship2);
 
 	/*LibVolume::Engine::VoxelActor asteroid(glm::ivec3(16, 16, 16));
 	asteroid.state.scale = glm::vec3(200.0, 200.0, 200.0);
@@ -106,6 +106,7 @@ int main(int argc, char* argv[])
 	//Create a terrain object
 	LibVolume::Engine::VoxelTerrain terrain(glm::vec3(16, 16, 16));
 	terrain.state.scale = glm::vec3(50.0, 50.0, 50.0);
+	terrain.state.position = glm::vec3(0.0, 0.0, -10000.0);
 
 	LibVolume::Generation::PerlinNoise noise;
 
@@ -120,7 +121,7 @@ int main(int argc, char* argv[])
 				float cb = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
 
 				terrain.loadAt(glm::ivec3(xx, yy, zz));
-				terrain.getAt(glm::ivec3(xx, yy, zz))->mesh->colour = glm::vec3(0.4, 0.4, 0.4);//glm::vec3(cr, cg, cb);
+				terrain.getAt(glm::ivec3(xx, yy, zz))->mesh->colour = glm::vec3(0.8, 0.6, 0.4);//glm::vec3(cr, cg, cb);
 				glm::ivec3 p = terrain.getAt(glm::ivec3(xx, yy, zz))->location;
 
 				for (int x = 0; x < 16; x ++)
@@ -153,10 +154,10 @@ int main(int argc, char* argv[])
 
 	realm.addObject(terrain);
 
-	for (int count = 0; count < 4; count ++)
-		addPlanet(&realm);
+	//for (int count = 0; count < 4; count ++)
+		//addPlanet(&realm);
 
-	LibVolume::Render::Structures::Light sun(LibVolume::Render::Structures::LightType::Directional, glm::vec3(0.5, 0.5, -1.0), glm::vec3(1.0, 1.0, 0.9), 0.03);
+	LibVolume::Render::Structures::Light sun(LibVolume::Render::Structures::LightType::Directional, glm::vec3(0.5, 0.5, -1.0), glm::vec3(1.0, 1.0, 0.9), 0.0);
 	realm.addLight(sun);
 
 	LibVolume::Render::Structures::Mesh lasermesh;
@@ -226,7 +227,7 @@ int main(int argc, char* argv[])
 		glm::quat p = glm::angleAxis(n, glm::normalize(glm::cross(ship2.state.position - ship.state.position, ship2.state.orientation * glm::vec3(0.0, 0.0, -1.0))));
 		ship2.state.orientation = p * ship2.state.orientation;//glm::mix(glm::inverse(glm::toQuat(look)), ship2.state.orientation, 0.97f);
 
-		if (realm.time % 50 == 0)
+		if (realm.time % 50 == 0 && false)
 		{
 			LibVolume::Engine::Actor* laser = new LibVolume::Engine::Actor();
 			laser->mesh = &lasermesh;
