@@ -7,6 +7,7 @@
 #include "libvolume/engine/actor.h"
 #include "libvolume/engine/voxelactor.h"
 #include "libvolume/engine/voxelterrain.h"
+#include "libvolume/generation/perlin.h"
 
 void addPlanet(LibVolume::Engine::Realm* realm)
 {
@@ -60,7 +61,7 @@ int main(int argc, char* argv[])
 	realm.linkTo(window);
 
 	LibVolume::Engine::Actor ship;
-	ship.mesh->loadFromOBJ("../spaceship0.obj.test", true);
+	ship.mesh->loadFromOBJ("../spaceship0.obj.test", false);
 	ship.state.position = glm::vec3(50.0, 0.0, 0.0);
 	ship.state.scale = glm::vec3(20.0, 20.0, 20.0);
 	ship.mesh_state.orientation = glm::quat(glm::vec3(-1.55, 0.0, 1.55));
@@ -75,7 +76,7 @@ int main(int argc, char* argv[])
 	ship2.mesh->colour = glm::vec3(0.5, 0.05, 0.05);
 	realm.addObject(ship2);
 
-	LibVolume::Engine::VoxelActor asteroid(glm::ivec3(16, 16, 16));
+	/*LibVolume::Engine::VoxelActor asteroid(glm::ivec3(16, 16, 16));
 	asteroid.state.scale = glm::vec3(200.0, 200.0, 200.0);
 	asteroid.state.position = glm::vec3(3000.0, 0.0, 0.0);
 	asteroid.mesh_state.position = glm::vec3(-8.0, -8.0, -8.0);
@@ -89,7 +90,7 @@ int main(int argc, char* argv[])
 			{
 				float d = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
 
-				asteroid.getAt(glm::ivec3(x + 8, y + 8, z + 8))->density = (0.1 + d) * (8.0 - std::sqrt(x * x + y * y + z * z));
+				asteroid.getAt(glm::ivec3(x + 8, y + 8, z + 8))->density = (0.1 + d) * (80.0 - std::sqrt(x * x + y * y + z * z));
 			}
 		}
 	}
@@ -100,34 +101,37 @@ int main(int argc, char* argv[])
 	asteroid.state.spin = glm::quat(glm::vec3(2.0 * a - 1.0, 2.0 * b - 1.0, 2.0 * c - 1.0) * 0.01f);
 
 	asteroid.extract(LibVolume::Engine::MeshingAlgorithm::MarchingCubes);
-	realm.addObject(asteroid);
+	realm.addObject(asteroid);*/
 
 	//Create a terrain object
-	LibVolume::Engine::VoxelTerrain terrain(glm::vec3(6, 6, 6));
+	LibVolume::Engine::VoxelTerrain terrain(glm::vec3(16, 16, 16));
 	terrain.state.scale = glm::vec3(50.0, 50.0, 50.0);
 
-	for (int x = 0; x < 6; x ++)
+	LibVolume::Generation::PerlinNoise noise;
+
+	for (int xx = -3; xx < 3; xx ++)
 	{
-		for (int y = 0; y < 6; y ++)
+		for (int yy = -3; yy < 3; yy ++)
 		{
-			for (int z = 0; z < 6; z ++)
+			for (int zz = -3; zz < 3; zz ++)
 			{
-				float value = (0.9) * (3.0 - std::sqrt(x * x + y * y + z * z));
+				float cr = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+				float cg = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+				float cb = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
 
-				for (int xx = -3; xx < 3; xx ++)
+				terrain.loadAt(glm::ivec3(xx, yy, zz));
+				terrain.getAt(glm::ivec3(xx, yy, zz))->mesh->colour = glm::vec3(0.4, 0.4, 0.4);//glm::vec3(cr, cg, cb);
+				glm::ivec3 p = terrain.getAt(glm::ivec3(xx, yy, zz))->location;
+
+				for (int x = 0; x < 16; x ++)
 				{
-					for (int yy = -3; yy < 3; yy ++)
+					for (int y = 0; y < 16; y ++)
 					{
-						for (int zz = -3; zz < 3; zz ++)
+						for (int z = 0; z < 16; z ++)
 						{
-							float cr = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
-							float cg = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
-							float cb = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
-
-							terrain.loadAt(glm::ivec3(xx, yy, zz));
-							terrain.getAt(glm::ivec3(xx, yy, zz))->mesh->colour = glm::vec3(cr, cg, cb);
-							glm::ivec3 p = terrain.getAt(glm::ivec3(xx, yy, zz))->location;
-							terrain.getAt(glm::ivec3(xx, yy, zz))->getAt(glm::ivec3(x, y, z))->density = (0.9) * (16.0 - std::sqrt((p.x + x) * (p.x + x) + (p.y + y) * (p.y + y) + (p.z + z) * (p.z + z)));
+							glm::vec3 n = glm::normalize(glm::vec3((p.x + x), (p.y + y), (p.z + z))) * 20.0f + glm::vec3(537.0, 537.0, 537.0);
+							float variant = noise.getPerlin(glm::vec4(n.x, n.y, n.z, 7.0) * 4.0f, -7.5, 2.0, 1.5);
+							terrain.getAt(glm::ivec3(xx, yy, zz))->getAt(glm::ivec3(x, y, z))->density = (0.9) * (32.0 + variant * 12.0 - std::sqrt((p.x + x) * (p.x + x) + (p.y + y) * (p.y + y) + (p.z + z) * (p.z + z)));
 						}
 					}
 				}
@@ -149,10 +153,10 @@ int main(int argc, char* argv[])
 
 	realm.addObject(terrain);
 
-	//for (int count = 0; count < 4; count ++)
-		//addPlanet(&realm);
+	for (int count = 0; count < 4; count ++)
+		addPlanet(&realm);
 
-	LibVolume::Render::Structures::Light sun(LibVolume::Render::Structures::LightType::Directional, glm::vec3(0.5, 0.5, -1.0), glm::vec3(1.0, 1.0, 0.9), 0.5);
+	LibVolume::Render::Structures::Light sun(LibVolume::Render::Structures::LightType::Directional, glm::vec3(0.5, 0.5, -1.0), glm::vec3(1.0, 1.0, 0.9), 0.03);
 	realm.addLight(sun);
 
 	LibVolume::Render::Structures::Mesh lasermesh;
