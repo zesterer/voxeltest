@@ -112,8 +112,6 @@ int main(int argc, char* argv[])
 		{
 			for (int z = 0; z < 6; z ++)
 			{
-				float d = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
-
 				float value = (0.9) * (3.0 - std::sqrt(x * x + y * y + z * z));
 
 				for (int xx = -3; xx < 3; xx ++)
@@ -122,8 +120,13 @@ int main(int argc, char* argv[])
 					{
 						for (int zz = -3; zz < 3; zz ++)
 						{
+							float cr = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+							float cg = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+							float cb = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+
 							terrain.loadAt(glm::ivec3(xx, yy, zz));
-							glm::ivec3 p = terrain.getAt(glm::ivec3(xx, yy, zz))->pos;
+							terrain.getAt(glm::ivec3(xx, yy, zz))->mesh->colour = glm::vec3(cr, cg, cb);
+							glm::ivec3 p = terrain.getAt(glm::ivec3(xx, yy, zz))->location;
 							terrain.getAt(glm::ivec3(xx, yy, zz))->getAt(glm::ivec3(x, y, z))->density = (0.9) * (16.0 - std::sqrt((p.x + x) * (p.x + x) + (p.y + y) * (p.y + y) + (p.z + z) * (p.z + z)));
 						}
 					}
@@ -138,7 +141,8 @@ int main(int argc, char* argv[])
 		{
 			for (int zz = -3; zz < 3; zz ++)
 			{
-				terrain.getAt(glm::ivec3(xx, yy, zz))->extract(LibVolume::Engine::MeshingAlgorithm::MarchingCubes);
+				if (terrain.existsAt(glm::ivec3(xx, yy, zz)))
+					terrain.getAt(glm::ivec3(xx, yy, zz))->extract(LibVolume::Engine::MeshingAlgorithm::MarchingCubes);
 			}
 		}
 	}
