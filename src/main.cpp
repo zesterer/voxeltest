@@ -127,13 +127,16 @@ int main(int argc, char* argv[])
 	LibVolume::Render::Structures::Light sun(LibVolume::Render::Structures::LightType::Directional, glm::vec3(0.5, 0.5, -1.0), glm::vec3(2.0, 2.0, 2.0), 0.01);
 	realm.addLight(sun);
 
-	LibVolume::Render::Structures::Light shiplight(LibVolume::Render::Structures::LightType::Point, glm::vec3(0.0, 0.0, 0.0), glm::vec3(4.0, 0.0, 0.0) * 1.0f, 1000.0f);
+	LibVolume::Render::Structures::Light shiplight(LibVolume::Render::Structures::LightType::Point, glm::vec3(0.0, 0.0, 0.0), glm::vec3(4.0, 4.0, 0.0) * 1.0f, 1000.0f);
 	realm.addLight(shiplight);
 
 	LibVolume::Render::Structures::Mesh lasermesh;
 	lasermesh.loadFromOBJ("../laser.obj.test", false);
-	lasermesh.colour = glm::vec3(100.0, 0.0, 0.0);
+	lasermesh.colour = glm::vec3(0.0, 200.0, 50.0);
 	long long time_since_last_shot = 0;
+
+	bool fp = false;
+	bool c = false;
 
 	//Run the window
 	while (window.tick() == false)
@@ -165,7 +168,20 @@ int main(int argc, char* argv[])
 			ship.state.spin = (glm::quat(ship.state.orientation * glm::vec3(0.0, 0.0, -0.001))) * ship.state.spin;
 
 		realm.camera.state.orientation = glm::inverse(glm::mix(ship.state.spin, glm::quat(), 8.0f) * ship.state.orientation);
-		realm.camera.state.position = ship.state.position + glm::vec3(0.0, 50.0, 300.0) * realm.camera.state.orientation;
+
+		if (!fp)
+			realm.camera.state.position = ship.state.position + glm::vec3(0.0, 50.0, 300.0) * realm.camera.state.orientation;
+		else
+			realm.camera.state.position = ship.state.position + glm::vec3(0.0, 0.0, 25.0) * realm.camera.state.orientation;
+
+		if (window.event_manager.keyboard_state.key_f)
+		{
+			if (!c)
+				fp = !fp;
+			c = true;
+		}
+		else
+			c = false;
 
 		ship.state.spin = glm::mix(ship.state.spin, glm::quat(), 0.015f + 0.010f * ship.state.spin.w);
 
@@ -177,6 +193,7 @@ int main(int argc, char* argv[])
 			laser->state.scale = glm::vec3(4.0, 4.0, 8.0);
 			laser->state.orientation = ship.state.orientation;
 			laser->state.velocity = ship.state.velocity + ship.state.orientation * glm::vec3(0.0, 0.0, -100.0);
+			laser->timeout = 240;
 			realm.addObject(*laser);
 
 			laser = new LibVolume::Engine::Actor();
@@ -185,6 +202,7 @@ int main(int argc, char* argv[])
 			laser->state.scale = glm::vec3(4.0, 4.0, 8.0);
 			laser->state.orientation = ship.state.orientation;
 			laser->state.velocity = ship.state.velocity + ship.state.orientation * glm::vec3(0.0, 0.0, -100.0);
+			laser->timeout = 240;
 			realm.addObject(*laser);
 
 			time_since_last_shot = 0;
