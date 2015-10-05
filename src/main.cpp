@@ -77,7 +77,7 @@ int main(int argc, char* argv[])
 	//Create a terrain object
 	LibVolume::Engine::VoxelTerrain terrain(glm::vec3(8, 8, 8));
 	terrain.state.scale = glm::vec3(50.0, 50.0, 50.0);
-	terrain.state.position = glm::vec3(0.0, 0.0, -3000.0);
+	terrain.state.position = glm::vec3(0.0, 0.0, -1000.0);
 
 	LibVolume::Generation::PerlinNoise noise;
 
@@ -108,16 +108,16 @@ int main(int argc, char* argv[])
 	}
 
 	for (int xx = -3; xx < 3; xx ++)
-	{
-		for (int yy = -3; yy < 3; yy ++)
 		{
-			for (int zz = -3; zz < 3; zz ++)
+			for (int yy = -3; yy < 3; yy ++)
 			{
-				if (terrain.existsAt(glm::ivec3(xx, yy, zz)))
-					terrain.getAt(glm::ivec3(xx, yy, zz))->extract(LibVolume::Engine::MeshingAlgorithm::MarchingCubes);
+				for (int zz = -3; zz < 3; zz ++)
+				{
+					if (terrain.existsAt(glm::ivec3(xx, yy, zz)))
+						terrain.getAt(glm::ivec3(xx, yy, zz))->extract(LibVolume::Engine::MeshingAlgorithm::MarchingCubes);
+				}
 			}
 		}
-	}
 
 	realm.addObject(terrain);
 
@@ -127,7 +127,7 @@ int main(int argc, char* argv[])
 	LibVolume::Render::Structures::Light sun(LibVolume::Render::Structures::LightType::Directional, glm::vec3(0.5, 0.5, -1.0), glm::vec3(2.0, 2.0, 2.0), 0.01);
 	realm.addLight(sun);
 
-	LibVolume::Render::Structures::Light shiplight(LibVolume::Render::Structures::LightType::Point, glm::vec3(0.0, 0.0, 0.0), glm::vec3(4.0, 4.0, 0.0) * 1.0f, 1000.0f);
+	LibVolume::Render::Structures::Light shiplight(LibVolume::Render::Structures::LightType::Point, glm::vec3(0.0, 0.0, 0.0), glm::vec3(4.0, 4.0, 4.0) * 1.0f, 1000.0f, glm::vec3(1.0, 0.0, 0.0), 0.8);
 	realm.addLight(shiplight);
 
 	LibVolume::Render::Structures::Mesh lasermesh;
@@ -209,6 +209,7 @@ int main(int argc, char* argv[])
 		}
 
 		shiplight.position = ship.state.position;
+		shiplight.direct = glm::vec3(0.0, 0.0, -1.0) * realm.camera.state.orientation;
 
 		//ship2.state.velocity += ship2.state.orientation * glm::vec3(0.0, 0.0, -0.1);
 
