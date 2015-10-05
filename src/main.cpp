@@ -124,7 +124,7 @@ int main(int argc, char* argv[])
 	//for (int count = 0; count < 4; count ++)
 		//addPlanet(&realm);
 
-	LibVolume::Render::Structures::Light sun(LibVolume::Render::Structures::LightType::Directional, glm::vec3(0.5, 0.5, -1.0), glm::vec3(2.0, 2.0, 2.0), 0.1);
+	LibVolume::Render::Structures::Light sun(LibVolume::Render::Structures::LightType::Directional, glm::vec3(0.5, 0.5, -1.0), glm::vec3(2.0, 2.0, 2.0), 0.01);
 	realm.addLight(sun);
 
 	LibVolume::Render::Structures::Light shiplight(LibVolume::Render::Structures::LightType::Point, glm::vec3(0.0, 0.0, 0.0), glm::vec3(4.0, 0.0, 0.0) * 1.0f, 1000.0f);
