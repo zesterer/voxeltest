@@ -74,33 +74,6 @@ int main(int argc, char* argv[])
 	ship2.mesh_state.orientation = glm::quat(glm::vec3(-1.55, 0.0, 1.55));
 	//realm.addObject(ship2);
 
-	/*LibVolume::Engine::VoxelActor asteroid(glm::ivec3(16, 16, 16));
-	asteroid.state.scale = glm::vec3(200.0, 200.0, 200.0);
-	asteroid.state.position = glm::vec3(3000.0, 0.0, 0.0);
-	asteroid.mesh_state.position = glm::vec3(-8.0, -8.0, -8.0);
-	asteroid.mesh->colour = glm::vec3(0.5, 0.4, 0.2);
-
-	for (int x = -8; x < 8; x ++)
-	{
-		for (int y = -8; y < 8; y ++)
-		{
-			for (int z = -8; z < 8; z ++)
-			{
-				float d = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
-
-				asteroid.getAt(glm::ivec3(x + 8, y + 8, z + 8))->density = (0.1 + d) * (80.0 - std::sqrt(x * x + y * y + z * z));
-			}
-		}
-	}
-
-	float a = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
-	float b = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
-	float c = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
-	asteroid.state.spin = glm::quat(glm::vec3(2.0 * a - 1.0, 2.0 * b - 1.0, 2.0 * c - 1.0) * 0.01f);
-
-	asteroid.extract(LibVolume::Engine::MeshingAlgorithm::MarchingCubes);
-	realm.addObject(asteroid);*/
-
 	//Create a terrain object
 	LibVolume::Engine::VoxelTerrain terrain(glm::vec3(8, 8, 8));
 	terrain.state.scale = glm::vec3(50.0, 50.0, 50.0);
@@ -114,10 +87,6 @@ int main(int argc, char* argv[])
 		{
 			for (int zz = -3; zz < 3; zz ++)
 			{
-				float cr = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
-				float cg = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
-				float cb = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
-
 				terrain.loadAt(glm::ivec3(xx, yy, zz));
 				terrain.getAt(glm::ivec3(xx, yy, zz))->mesh->colour = glm::vec3(0.8, 0.6, 0.4);//glm::vec3(cr, cg, cb);
 				glm::ivec3 p = terrain.getAt(glm::ivec3(xx, yy, zz))->location;
@@ -129,7 +98,7 @@ int main(int argc, char* argv[])
 						for (int z = 0; z < 8; z ++)
 						{
 							glm::vec3 n = glm::normalize(glm::vec3((p.x + x), (p.y + y), (p.z + z))) * 20.0f + glm::vec3(537.0, 537.0, 537.0);
-							float variant = noise.getPerlin(glm::vec4(n.x, n.y, n.z, 7.0) * 4.0f, -7.5, 2.0, 1.5);
+							float variant = noise.getPerlin(glm::vec4(n.x, n.y, n.z, 7.0) * 4.0f, -7.5, 3.0, 1.5);
 							terrain.getAt(glm::ivec3(xx, yy, zz))->getAt(glm::ivec3(x, y, z))->density = (0.9) * (16.0 + variant * 6.0 - std::sqrt((p.x + x) * (p.x + x) + (p.y + y) * (p.y + y) + (p.z + z) * (p.z + z)));
 						}
 					}
@@ -155,11 +124,15 @@ int main(int argc, char* argv[])
 	//for (int count = 0; count < 4; count ++)
 		//addPlanet(&realm);
 
-	LibVolume::Render::Structures::Light sun(LibVolume::Render::Structures::LightType::Directional, glm::vec3(0.5, 0.5, -1.0), glm::vec3(1.0, 1.0, 0.9), 0.1);
+	LibVolume::Render::Structures::Light sun(LibVolume::Render::Structures::LightType::Directional, glm::vec3(0.5, 0.5, -1.0), glm::vec3(2.0, 2.0, 2.0), 0.1);
 	realm.addLight(sun);
 
+	LibVolume::Render::Structures::Light shiplight(LibVolume::Render::Structures::LightType::Point, glm::vec3(0.0, 0.0, 0.0), glm::vec3(4.0, 0.0, 0.0) * 1.0f, 1000.0f);
+	realm.addLight(shiplight);
+
 	LibVolume::Render::Structures::Mesh lasermesh;
-	lasermesh.loadFromOBJ("../laser.obj.test");
+	lasermesh.loadFromOBJ("../laser.obj.test", false);
+	lasermesh.colour = glm::vec3(100.0, 0.0, 0.0);
 	long long time_since_last_shot = 0;
 
 	//Run the window
@@ -200,7 +173,6 @@ int main(int argc, char* argv[])
 		{
 			LibVolume::Engine::Actor* laser = new LibVolume::Engine::Actor();
 			laser->mesh = &lasermesh;
-			laser->mesh->colour = glm::vec3(200.0, 0.0, 0.0);
 			laser->state.position = ship.state.position + ship.state.orientation * glm::vec3(50.0, 0.0, -100.0);
 			laser->state.scale = glm::vec3(4.0, 4.0, 8.0);
 			laser->state.orientation = ship.state.orientation;
@@ -209,7 +181,6 @@ int main(int argc, char* argv[])
 
 			laser = new LibVolume::Engine::Actor();
 			laser->mesh = &lasermesh;
-			laser->mesh->colour = glm::vec3(200.0, 0.0, 0.0);
 			laser->state.position = ship.state.position + ship.state.orientation * glm::vec3(-50.0, 0.0, -100.0);
 			laser->state.scale = glm::vec3(4.0, 4.0, 8.0);
 			laser->state.orientation = ship.state.orientation;
@@ -218,6 +189,8 @@ int main(int argc, char* argv[])
 
 			time_since_last_shot = 0;
 		}
+
+		shiplight.position = ship.state.position;
 
 		//ship2.state.velocity += ship2.state.orientation * glm::vec3(0.0, 0.0, -0.1);
 
