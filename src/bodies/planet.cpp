@@ -38,9 +38,9 @@ namespace Vast
 
         	for (int c = 0; c < 20; c ++)
 			{
-				this->parts[c].poly.a.position = parts[c * 3 + 0] * 10.0f;
-				this->parts[c].poly.b.position = parts[c * 3 + 1] * 10.0f;
-				this->parts[c].poly.c.position = parts[c * 3 + 2] * 10.0f;
+				this->parts[c].poly.a.position = parts[c * 3 + 0];
+				this->parts[c].poly.b.position = parts[c * 3 + 1];
+				this->parts[c].poly.c.position = parts[c * 3 + 2];
 				this->parts[c].owner = this;
 
 				this->parts[c].poly.a.normal = glm::normalize(this->parts[c].poly.a.position);
@@ -60,21 +60,36 @@ namespace Vast
 
         	bool should_remesh = false;
 
-			for (int c = 0; c < 20; c ++)
-			{
-				should_remesh |= this->parts[c].update((glm::vec3)(inv * glm::f64vec4(this->parent->camera.state.position, 1.0)));
-			}
+        	glm::vec3 camera_relative = (glm::vec3)(inv * glm::f64vec4(this->parent->camera.state.position, 1.0));
 
-			if (should_remesh)
+			if (this->parent->time % 10 == 0)
 			{
-				this->mesh->clear();
-
 				for (int c = 0; c < 20; c ++)
 				{
-					this->makeMesh(&this->mesh->polygons, &this->parts[c]);
+					should_remesh |= this->parts[c].update(camera_relative);
+				}
+
+				if (should_remesh)
+				{
+					this->mesh->clear();
+
+					for (int c = 0; c < 20; c ++)
+					{
+						this->makeMesh(&this->mesh->polygons, &this->parts[c]);
+					}
 				}
 			}
+
+			this->parent->background_colour = glm::mix(this->parent->background_colour, glm::mix(glm::vec3(2.0, 2.0, 6.0), glm::vec3(0.0, 0.0, 0.0), glm::max(0.0f, glm::min(1.0f, (glm::length(camera_relative) - 1.0f)))), 0.01);
         }
+
+		TerrainPart::~TerrainPart()
+		{
+			delete this->child[0];
+			delete this->child[1];
+        	delete this->child[2];
+        	delete this->child[3];
+		}
 
         void Planet::makeMesh(std::vector<LibVolume::Render::Structures::Polygon>* poly_vector, TerrainPart* part)
         {
@@ -129,9 +144,9 @@ namespace Vast
 					this->child[c]->poly.c.position = glm::normalize(this->child[c]->poly.c.position);
 
 					LibVolume::Generation::PerlinNoise noise;
-					this->child[c]->poly.a.position *= 10.0 + 0.1 * noise.getPerlin(glm::vec4(this->child[c]->poly.a.position, 7.0) * 128.0f, -4.0, 6.0, 3.0);
-					this->child[c]->poly.b.position *= 10.0 + 0.1 * noise.getPerlin(glm::vec4(this->child[c]->poly.b.position, 7.0) * 128.0f, -4.0, 6.0, 3.0);
-					this->child[c]->poly.c.position *= 10.0 + 0.1 * noise.getPerlin(glm::vec4(this->child[c]->poly.c.position, 7.0) * 128.0f, -4.0, 6.0, 3.0);
+					this->child[c]->poly.a.position *= 1.0 + 0.005 * noise.getPerlin(glm::vec4(this->child[c]->poly.a.position, 7.0) * 512.0f, -4.0, 6.0, 3.0);
+					this->child[c]->poly.b.position *= 1.0 + 0.005 * noise.getPerlin(glm::vec4(this->child[c]->poly.b.position, 7.0) * 512.0f, -4.0, 6.0, 3.0);
+					this->child[c]->poly.c.position *= 1.0 + 0.005 * noise.getPerlin(glm::vec4(this->child[c]->poly.c.position, 7.0) * 512.0f, -4.0, 6.0, 3.0);
 
 					this->child[c]->poly.correctNormals();
 
@@ -187,9 +202,10 @@ namespace Vast
 
         	glm::vec3 average = (this->poly.a.position + this->poly.b.position + this->poly.c.position) / 3.0f;
 
-        	if ((glm::length(average - camera_pos) - 0.1f) * glm::pow(2.0, (float)this->depth) < 10.0f * 10.0f)
+			float detail = (glm::length(average - camera_pos) - 0.02f) * glm::pow(2.0, (float)this->depth);
+        	if (detail < 5.0f)
 				result |= this->split();
-			else
+			else if (detail > 8.0f)
 				result |= this->join();
 
         	if (this->has_split)

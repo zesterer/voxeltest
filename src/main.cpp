@@ -117,7 +117,7 @@ int main(int argc, char* argv[])
 
 	Vast::Bodies::Planet planet2;
 	planet2.state.scale = glm::vec3(80000.0, 80000.0, 80000.0);
-	planet2.state.position = glm::vec3(1310000.0, 0.0, 0.0);
+	planet2.state.position = glm::vec3(131000.0, 0.0, 0.0);
 	planet2.mesh->colour = glm::vec3(0.5, 0.4, 0.2);
 	realm.addObject(planet2);
 

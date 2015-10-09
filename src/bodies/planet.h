@@ -21,6 +21,7 @@ namespace Vast
 				TerrainPart* parent = nullptr;
 				Planet* owner = nullptr;
 
+				~TerrainPart();
 				bool split();
 				bool join();
 				bool update(glm::vec3 camera_pos);
@@ -31,7 +32,7 @@ namespace Vast
 			public:
 				TerrainPart parts[20];
 
-				int max_depth = 10;
+				int max_depth = 11;
 
 				Planet();
 				void tick() override;
