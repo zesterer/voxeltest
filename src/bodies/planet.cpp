@@ -80,7 +80,20 @@ namespace Vast
 				}
 			}
 
-			this->parent->background_colour = glm::mix(this->parent->background_colour, glm::mix(glm::vec3(2.0, 2.0, 6.0), glm::vec3(0.0, 0.0, 0.0), glm::max(0.0f, glm::min(1.0f, (glm::length(camera_relative) - 1.0f)))), 0.01);
+			this->parent->background_colour = glm::mix(this->parent->background_colour, glm::mix(glm::vec3(2.0, 2.0, 6.0), glm::vec3(0.0, 0.0, 0.0), glm::max(0.0f, glm::min(1.0f, glm::pow(glm::length(camera_relative), 3.0f) * 5.0f))), 0.01);
+
+			float light_factor = glm::max(0.0f, glm::dot(glm::normalize(camera_relative), glm::normalize(-glm::vec3(0.5, 0.5, -1.0))));
+
+			if (glm::length(camera_relative) >= 1.1f)
+			{
+				this->parent->camera.fog_distance = 0.0f;
+				this->parent->background_colour = glm::vec3(0.0, 0.0, 0.0);
+			}
+			else
+			{
+				this->parent->camera.fog_distance = 20000.0f / (1.1f - glm::length(camera_relative));
+				this->parent->background_colour = glm::mix(glm::vec3(0.0, 0.0, 0.0), light_factor * glm::vec3(2.0, 2.0, 6.0), -5.0f * (glm::length(camera_relative) - 1.1f));
+			}
         }
 
 		TerrainPart::~TerrainPart()
@@ -139,24 +152,36 @@ namespace Vast
 
 				for (int c = 0; c < 4; c ++)
 				{
-					this->child[c]->poly.a.position = glm::normalize(this->child[c]->poly.a.position);
-					this->child[c]->poly.b.position = glm::normalize(this->child[c]->poly.b.position);
-					this->child[c]->poly.c.position = glm::normalize(this->child[c]->poly.c.position);
-
 					LibVolume::Generation::PerlinNoise noise;
-					this->child[c]->poly.a.position *= 1.0 + 0.005 * noise.getPerlin(glm::vec4(this->child[c]->poly.a.position, 7.0) * 512.0f, -4.0, 6.0, 3.0);
-					this->child[c]->poly.b.position *= 1.0 + 0.005 * noise.getPerlin(glm::vec4(this->child[c]->poly.b.position, 7.0) * 512.0f, -4.0, 6.0, 3.0);
-					this->child[c]->poly.c.position *= 1.0 + 0.005 * noise.getPerlin(glm::vec4(this->child[c]->poly.c.position, 7.0) * 512.0f, -4.0, 6.0, 3.0);
 
-					this->child[c]->poly.correctNormals();
+					this->child[c]->poly.a.position = this->owner->getPositionAt(this->child[c]->poly.a.position);
+					this->child[c]->poly.b.position = this->owner->getPositionAt(this->child[c]->poly.b.position);
+					this->child[c]->poly.c.position = this->owner->getPositionAt(this->child[c]->poly.c.position);
 
-					glm::vec3 v = this->child[c]->poly.a.normal;
+					//this->child[c]->poly.a.normal = glm::normalize(this->child[c]->poly.a.position);
+					//this->child[c]->poly.b.normal = glm::normalize(this->child[c]->poly.b.position);
+					//this->child[c]->poly.c.normal = glm::normalize(this->child[c]->poly.c.position);
 
-					this->child[c]->poly.a.normal = glm::normalize(this->child[c]->poly.a.position);
-					this->child[c]->poly.b.normal = glm::normalize(this->child[c]->poly.b.position);
-					this->child[c]->poly.c.normal = glm::normalize(this->child[c]->poly.c.position);
+					this->child[c]->poly.a.normal = this->owner->getNormalAt(this->child[c]->poly.a.position, this->depth);
+					this->child[c]->poly.b.normal = this->owner->getNormalAt(this->child[c]->poly.b.position, this->depth);
+					this->child[c]->poly.c.normal = this->owner->getNormalAt(this->child[c]->poly.c.position, this->depth);
 
-					glm::vec3 avg = (this->child[c]->poly.a.normal + this->child[c]->poly.b.normal + this->child[c]->poly.c.normal) / 3.0f;
+					/*if (this->owner->getHeightAt(this->child[c]->poly.a.position) < 0.999f)
+						this->child[c]->poly.a.colour = glm::vec3(0.3, 0.6, 1.0);
+					if (this->owner->getHeightAt(this->child[c]->poly.b.position) < 0.999f)
+						this->child[c]->poly.b.colour = glm::vec3(0.3, 0.6, 1.0);
+					if (this->owner->getHeightAt(this->child[c]->poly.c.position) < 0.999f)
+						this->child[c]->poly.c.colour = glm::vec3(0.3, 0.6, 1.0);*/
+
+					//this->child[c]->poly.correctNormals();
+
+					//this->child[c]->poly.a.normal *= 0.001f;// = glm::normalize(this->child[c]->poly.a.position);
+					//this->child[c]->poly.b.normal *= 0.001f;// = glm::normalize(this->child[c]->poly.b.position);
+					//this->child[c]->poly.c.normal *= 0.001f;// = glm::normalize(this->child[c]->poly.c.position);
+
+					//this->child[c]->poly.correctNormals();
+
+					//glm::vec3 avg = (this->child[c]->poly.a.normal + this->child[c]->poly.b.normal + this->child[c]->poly.c.normal) / 3.0f;
 
 					/*if (glm::dot(avg, va) < 0.8)
 						this->child[c]->poly.a.normal = va;
@@ -167,15 +192,54 @@ namespace Vast
 					if (glm::dot(avg, vc) < 0.8)
 						this->child[c]->poly.c.normal = vc;*/
 
-					this->child[c]->poly.a.normal = glm::mix(v, this->child[c]->poly.a.normal, glm::pow(glm::dot(avg, v) - 0.8f, 1.0));
+					/*this->child[c]->poly.a.normal = glm::mix(v, this->child[c]->poly.a.normal, glm::pow(glm::dot(avg, v) - 0.8f, 1.0));
 					this->child[c]->poly.b.normal = glm::mix(v, this->child[c]->poly.b.normal, glm::pow(glm::dot(avg, v) - 0.8f, 1.0));
 					this->child[c]->poly.c.normal = glm::mix(v, this->child[c]->poly.c.normal, glm::pow(glm::dot(avg, v) - 0.8f, 1.0));
+
+					this->child[c]->poly.a.normal = glm::normalize(glm::cross(this->owner->getPositionAt(glm::mix(this->child[c]->poly.a.position, this->child[c]->poly.b.position, 0.1f)) - this->child[c]->poly.a.position, this->owner->getPositionAt(glm::mix(this->child[c]->poly.a.position, this->child[c]->poly.c.position, 0.1f)) - this->child[c]->poly.a.position));
+                    if (glm::dot(this->child[c]->poly.a.normal, glm::normalize(this->child[c]->poly.a.position)) < 0.0)
+						this->child[c]->poly.a.normal *= -1;
+
+					this->child[c]->poly.b.normal = glm::normalize(glm::cross(this->owner->getPositionAt(glm::mix(this->child[c]->poly.b.position, this->child[c]->poly.c.position, 0.1f)) - this->child[c]->poly.b.position, this->owner->getPositionAt(glm::mix(this->child[c]->poly.b.position, this->child[c]->poly.a.position, 0.1f)) - this->child[c]->poly.b.position));
+                    if (glm::dot(this->child[c]->poly.b.normal, glm::normalize(this->child[c]->poly.b.position)) < 0.0)
+						this->child[c]->poly.b.normal *= -1;
+
+					this->child[c]->poly.c.normal = glm::normalize(glm::cross(this->owner->getPositionAt(glm::mix(this->child[c]->poly.c.position, this->child[c]->poly.a.position, 0.1f)) - this->child[c]->poly.c.position, this->owner->getPositionAt(glm::mix(this->child[c]->poly.c.position, this->child[c]->poly.b.position, 0.1f)) - this->child[c]->poly.c.position));
+                    if (glm::dot(this->child[c]->poly.c.normal, glm::normalize(this->child[c]->poly.c.position)) < 0.0)
+						this->child[c]->poly.c.normal *= -1;*/
 				}
 
 				return true;
 			}
 
 			return false;
+        }
+
+        float Planet::getHeightAt(glm::vec3 pos)
+        {
+        	return 1.0 + 0.005 * LibVolume::Generation::PerlinNoise::getPerlin(glm::vec4(pos, 7.0) * 512.0f, -3.5, 2.0, 2.0);
+        }
+
+        float Planet::getDistanceAt(glm::vec3 pos)
+        {
+        	return glm::length(pos) - this->getHeightAt(pos);
+        }
+
+        glm::vec3 Planet::getNormalAt(glm::vec3 pos, int detail)
+        {
+        	//LibVolume::IO::output("Hello. " + std::to_string(detail));
+
+        	float multiplier = 0.0001f;
+        	return glm::mix(glm::normalize(pos), glm::normalize(glm::vec3(
+							this->getDistanceAt(pos + glm::vec3(+0.01, +0.00, +0.00) * multiplier) - this->getDistanceAt(pos + glm::vec3(-0.01, +0.00, +0.00) * multiplier),
+							this->getDistanceAt(pos + glm::vec3(+0.00, +0.01, +0.00) * multiplier) - this->getDistanceAt(pos + glm::vec3(+0.00, -0.01, +0.00) * multiplier),
+							this->getDistanceAt(pos + glm::vec3(+0.00, +0.00, +0.01) * multiplier) - this->getDistanceAt(pos + glm::vec3(+0.00, +0.00, -0.01) * multiplier)
+							)), glm::max(0.0f, 1.0f - 1.0f / glm::max(0.0f, glm::pow(glm::max(0.0f, detail - 3.5f), 0.5f))));
+        }
+
+        glm::vec3 Planet::getPositionAt(glm::vec3 pos)
+        {
+        	return glm::normalize(pos) * this->getHeightAt(pos);
         }
 
         bool TerrainPart::join()
@@ -202,10 +266,10 @@ namespace Vast
 
         	glm::vec3 average = (this->poly.a.position + this->poly.b.position + this->poly.c.position) / 3.0f;
 
-			float detail = (glm::length(average - camera_pos) - 0.02f) * glm::pow(2.0, (float)this->depth);
-        	if (detail < 5.0f)
+			float detail = glm::max(7.0f, 0.55f * (glm::sqrt(glm::length(average - camera_pos)) - 0.13f) * glm::pow(2.0f, (float)this->depth));
+        	if (detail < 8.0f)
 				result |= this->split();
-			else if (detail > 8.0f)
+			else if (detail > 6.0f)
 				result |= this->join();
 
         	if (this->has_split)
@@ -217,6 +281,21 @@ namespace Vast
 			}
 
 			return result;
+        }
+
+        void Planet::collide(LibVolume::Engine::Entity& other)
+        {
+        	glm::f64mat4 inv = glm::inverse(this->state.matrix * this->mesh_state.matrix);
+        	glm::vec3 other_relative = (glm::vec3)(inv * glm::f64vec4(other.state.position, 1.0));
+
+        	glm::vec3 height = this->getPositionAt(other_relative);
+
+        	if (glm::length(other_relative) < glm::length(height))
+			{
+				other.state.position = glm::f64vec3(this->state.matrix * this->mesh_state.matrix * glm::f64vec4(height, 1.0));
+				//if (glm::length(other.state.velocity) > 0.0)
+					//other.state.velocity = glm::reflect(other.state.velocity, glm::f64vec3(height)) * 0.3;
+			}
         }
 	}
 }

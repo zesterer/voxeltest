@@ -69,6 +69,7 @@ int main(int argc, char* argv[])
 	window.outputContextDebug();
 
 	LibVolume::Engine::Realm realm;
+	realm.camera.fog_distance = 0.0f;
 	realm.linkTo(window);
 
 	LibVolume::Engine::Actor ship;
@@ -116,9 +117,9 @@ int main(int argc, char* argv[])
 	}*/
 
 	Vast::Bodies::Planet planet2;
-	planet2.state.scale = glm::vec3(80000.0, 80000.0, 80000.0);
-	planet2.state.position = glm::vec3(131000.0, 0.0, 0.0);
-	planet2.mesh->colour = glm::vec3(0.5, 0.4, 0.2);
+	planet2.state.scale = glm::vec3(1000000.0, 1000000.0, 1000000.0);
+	planet2.state.position = glm::vec3(0.0, 0.0, -1100000.0);
+	planet2.mesh->colour = glm::vec3(0.3, 0.7, 0.2);
 	realm.addObject(planet2);
 
 	/*for (int c = 0; c < 4; c ++)
@@ -224,7 +225,7 @@ int main(int argc, char* argv[])
 
 	realm.addObject(terrain);*/
 
-	for (int count = 0; count < 8; count ++)
+	for (int count = 0; count < 4; count ++)
 		addPlanet(&realm);
 
 	LibVolume::Render::Structures::Light sun(LibVolume::Render::Structures::LightType::Directional, glm::vec3(0.5, 0.5, -1.0), glm::vec3(2.0, 2.0, 2.0), 0.01);
@@ -313,7 +314,7 @@ int main(int argc, char* argv[])
 		{
 			LibVolume::Engine::Actor* laser = new LibVolume::Engine::Actor();
 			laser->mesh = &lasermesh;
-			laser->state.position = ship.state.position + ship.state.orientation * glm::f64vec3(50.0, 0.0, -100.0);
+			laser->state.position = ship.state.position + ship.state.velocity + ship.state.orientation * glm::f64vec3(50.0, 0.0, -100.0);
 			laser->state.scale = glm::vec3(4.0, 4.0, 8.0);
 			laser->state.orientation = ship.state.orientation;
 			laser->state.velocity = ship.state.velocity + ship.state.orientation * glm::f64vec3(0.0, 0.0, -100.0);
@@ -322,7 +323,7 @@ int main(int argc, char* argv[])
 
 			laser = new LibVolume::Engine::Actor();
 			laser->mesh = &lasermesh;
-			laser->state.position = ship.state.position + ship.state.orientation * glm::f64vec3(-50.0, 0.0, -100.0);
+			laser->state.position = ship.state.position + ship.state.velocity + ship.state.orientation * glm::f64vec3(-50.0, 0.0, -100.0);
 			laser->state.scale = glm::vec3(4.0, 4.0, 8.0);
 			laser->state.orientation = ship.state.orientation;
 			laser->state.velocity = ship.state.velocity + ship.state.orientation * glm::f64vec3(0.0, 0.0, -100.0);
@@ -331,6 +332,9 @@ int main(int argc, char* argv[])
 
 			time_since_last_shot = 0;
 		}
+
+		//planet2.state.position *= 1.01f;
+		//planet2.state.scale *= 1.01f;
 
 		//ship2.state.velocity += ship2.state.orientation * glm::vec3(0.0, 0.0, -0.1);
 
@@ -341,7 +345,6 @@ int main(int argc, char* argv[])
 		time_since_last_shot ++;
 
 		realm.tick();
-
 		realm.render();
 	};
 

@@ -36,7 +36,12 @@ namespace Vast
 
 				Planet();
 				void tick() override;
+				void collide(LibVolume::Engine::Entity& other) override;
 				void makeMesh(std::vector<LibVolume::Render::Structures::Polygon>* poly_vector, TerrainPart* part);
+				float getHeightAt(glm::vec3 pos);
+				float getDistanceAt(glm::vec3 pos);
+				glm::vec3 getPositionAt(glm::vec3 pos);
+				glm::vec3 getNormalAt(glm::vec3 pos, int detail = 0);
 		};
 	}
 }
